@@ -143,8 +143,7 @@ var Hyperform = Class.create({
 					inputType = Hyperform.inputTypeAliases[inputType];
 				}
 				if (typeof Hyperform.inputTypes[inputType] === 'object') {
-					field.__proto__ = Hyperform.inputTypes[inputType];
-					field.init();
+					Hyperform.inputTypes[inputType].init.apply(field);
 				}
 			}//<--if
 			
