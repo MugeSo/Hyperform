@@ -133,602 +133,19 @@ var Hyperform = Class.create({
 			//
 			// td
 			//
-			// input/textarea
+			// initialize field 
 			if (typeof field.input !== 'undefined') {
 				field._d = field.input;
 				
-				// basic input
-				var isBasicInput = (
-					(field.input.type === 'text') ||
-					(field.input.type === 'password') ||
-					(field.input.type === 'password-no-confirm')
-				);
-				if (isBasicInput) {
-					// create input element
-					field._f = new Element('input', {
-						type       : (field.input.type === 'text') ? 'text' : 'password'
-					});
-					
-					// create input container
-					field._c = new Element('div', {className: 'input'}).insert(field._f);
-					
-					if (typeof field.input.maxlength !== 'undefined') {
-						field._f.writeAttribute('maxlength', field.input.maxlength);
-					}
-					
-					if (typeof field.input.placeholder !== 'undefined') {
-						field._f.writeAttribute('placeholder', field.input.placeholder);
-					}
-					
-					if (typeof field.input.value !== 'undefined') {
-						field._f.writeAttribute('value', field.input.value);
-					}
-					
-					if (typeof field.input.width !== 'undefined') {
-						field._f.setStyle({width: field.input.width + 'px'});
-					} else {
-						field._f.setStyle({width: '200px'});
-					}
-					
-					// observe onChange
-					field._f.observe('change', function() {
-						field.validate();
-					});
-					
-					// for confirm input
-					if (field.input.type === 'password') {
-						// create input element
-						field._fc = new Element('input', {
-							type: 'password'
-						});
-						
-						field._c.insert(field._fc);
-						
-						if (typeof field.input.maxlength !== 'undefined') {
-							field._fc.writeAttribute('maxlength', field.input.maxlength);
-						}
-						
-						if (typeof field.input.placeholder !== 'undefined') {
-							field._fc.writeAttribute('placeholder', field.input.placeholder);
-						}
-						
-						if (typeof field.input.value !== 'undefined') {
-							field._fc.writeAttribute('value', field.input.value);
-						}
-						
-						if (typeof field.input.width !== 'undefined') {
-							field._fc.setStyle({width: field.input.width + 'px'});
-						} else {
-							field._fc.setStyle({width: '200px'});
-						}
-						
-						// observe onChange
-						field._fc.observe('change', function() {
-							field.validate();
-						});
-					}
-					
-					// if appendText
-					if (typeof field.input.appendText !== 'undefined') {
-						field._c.insert(
-							new Element('span', {className: 'append'}).insert(field.input.appendText)
-						);
-					}
-					
-					// if prependText
-					if (typeof field.input.prependText !== 'undefined') {
-						field._c.insert({top:
-							new Element('span', {className: 'prepend'}).insert(field.input.prependText)
-						});
-					}
-				}//<--if
-				
-				// textarea
-				if (field.input.type === 'textarea') {
-					// create textarea element
-					field._f = new Element('textarea');
-					
-					if (typeof field.input.maxlength !== 'undefined') {
-						field._f.writeAttribute('maxlength', field.input.maxlength);
-					}
-					
-					if (typeof field.input.placeholder !== 'undefined') {
-						field._f.writeAttribute('placeholder', field.input.placeholder);
-					}
-					
-					if (typeof field.input.value !== 'undefined') {
-						field._f.insert(field.input.value);
-					}
-					
-					if (typeof field.input.width !== 'undefined') {
-						field._f.setStyle({width: field.input.width + 'px'});
-					} else {
-						field._f.setStyle({width: '300px'});
-					}
-					
-					if (typeof field.input.height !== 'undefined') {
-						field._f.setStyle({height: field.input.height + 'px'});
-					} else {
-						field._f.setStyle({height: '50px'});
-					}
-					
-					// observe onChange
-					field._f.observe('change', function() {
-						field.validate();
-					});
-				}//<--if
-				
-				// radio
-				if ((field.input.type === 'radio') || (field.input.type === 'radio-block')) {
-					// create value object
-					field._o = null;
-					
-					if (typeof field.input.value !== 'undefined') {
-						field._o = field.input.value;
-					}
-					
-					// create *interface* container
-					field._i = new Element('div', {className: 'radio'});
-					
-					if (field.input.type === 'radio-block') {
-						field._i.addClassName('radio-block');
-					}
-					
-					// each items
-					field.input.items.each(function _eachItemsInput(a) {
-						// create radio button
-						var button = new Element('button');
-						field._i.insert(button);
-						
-						var label = new Element('label').insert(a.label);
-						button.insert(label);
-						
-						if (typeof a.icon !== 'undefined') {
-							label.addClassName('hyperform-icon');
-							label.setStyle({
-								backgroundImage: 'url(' + a.icon + ')'
-							});
-						}
-						
-						// observe onClick
-						button.observe('click', function _onClickRadioBtn() {
-							// write value
-							field._o = a.value;
-							
-							// rewrite selected className
-							field._i.select('button').each(function _eachRadioBtns(b) {
-								b.removeClassName('selected');
-							});
-							this.addClassName('selected');
-							
-							// validate
-							field.validate();
-						});
-						
-						// selected state
-						if ((typeof a.isSelected !== 'undefined') && (a.isSelected === true)) {
-							button.addClassName('selected');
-							field._o = a.value;
-						}
-						
-						// button style customization
-						if (typeof field.input.style !== 'undefined') {
-							button.setStyle(field.input.style);
-						}
-					});//<--#each
-				}//<--if
-				
-				// checkbox
-				if ((field.input.type === 'checkbox') || (field.input.type === 'checkbox-block')) {
-					// create object (array)
-					field._o = [];
-					
-					// create *interface* container
-					field._i = new Element('div', {className: 'checkbox'});
-					
-					if (field.input.type === 'checkbox-block') {
-						field._i.addClassName('checkbox-block');
-					}
-					
-					// each items
-					field.input.items.each(function _eachItemsInput(a) {
-						// create radio button
-						var button = new Element('button');
-						
-						var label = new Element('label').insert(a.label);
-						
-						if (typeof a.icon !== 'undefined') {
-							label.addClassName('hyperform-icon');
-							label.setStyle({
-								backgroundImage: 'url(' + a.icon + ')'
-							});
-						}
-						
-						button.insert(label);
-						
-						// observe onClick
-						button.observe('click', function _onClickChkboxBtn() {
-							if (this.hasClassName('selected') === true) {
-								// remove
-								field._o = field._o.without(a.value);
-								this.removeClassName('selected');
-							} else {
-								// add
-								field._o.push(a.value);
-								this.addClassName('selected');
-							}
-							
-							// validate
-							field.validate();
-						});
-						
-						// insert to *interface* container
-						field._i.insert(button);
-						
-						// selected state
-						if ((typeof a.isSelected !== 'undefined') && (a.isSelected === true)) {
-							button.addClassName('selected');
-							field._o.push(a.value);
-						}
-						
-						// button style customization
-						if (typeof field.input.style !== 'undefined') {
-							button.setStyle(field.input.style);
-						}
-					});//<--#each
-				}//<--if
-				
-				// pulldown
-				if (field.input.type === 'pulldown') {
-					// create value object
-					field._o = null;
-					
-					if (typeof field.input.value !== 'undefined') {
-						field._o = field.input.value;
-					}
-					
-					// create *interface* container
-					field._i = new Element('div', {className: 'pulldown'});
-					
-					// interface
-					var button = new Element('button');
-					field._i.insert(button);
-					
-					var label = new Element('label');
-					button.insert(label);
-					
-					var list = new Element('div', {className: 'pulldown-list'}).hide();
-					field._i.insert(list);
-					
-					button.observe('click', function _onClickBtnPulldown(e) {
-						e.stop();
-						button.toggleClassName('selecting');
-						list.toggle();
-						
-						if (list.visible() === false) {
-							return;
-						}
-						
-						// positioning
-						var isOut = (
-							(
-								(table.cumulativeOffset().top + table.getHeight())
-								- (list.cumulativeOffset().top + list.getHeight())
-							) <= 0
-						);
-						if (isOut) {
-							var isOver = ((table.getHeight() - list.getHeight()) < 0);
-							if (isOver) {
-								if (list.hasClassName('pulldown-list-put') === false) {
-									list.addClassName('pulldown-list-put');
-								}
-							} else {
-								if (list.hasClassName('pulldown-list-upper') === false) {
-									list.addClassName('pulldown-list-upper');
-								}
-							}
-						}
-					});
-					
-					table.observe('click', function _onClickTablePulldown() {
-						if (list.visible() === true) {
-							button.removeClassName('selecting');
-							list.hide();
-						}
-					});
-					
-					field.input.items.unshift({
-						label: '&mdash;',
-						value: null
-					});
-					
-					var selectItem = function _selectItem(n) {
-						field._o = field.input.items[n].value;
-						
-						label.update(field.input.items[n].label);
-						
-						if (typeof field.input.items[n].icon === 'undefined') {
-							label.removeClassName('hyperform-icon');
-							label.setStyle({
-								backgroundImage: 'none'
-							});
-						} else {
-							label.addClassName('hyperform-icon');
-							label.setStyle({
-								backgroundImage: 'url(' + field.input.items[n].icon + ')'
-							});
-						}
-					};
-					
-					selectItem(0);
-					
-					// each items
-					field.input.items.each(function _eachItemsInput(a, i) {
-						var b = new Element('div').insert(a.label).observe('click', function(e) {
-							selectItem(i);
-							button.removeClassName('selecting');
-							list.hide();
-							
-							// validate
-							field.validate();
-							
-							e.stop();
-						});
-						list.insert(b);
-						
-						if (typeof a.icon !== 'undefined') {
-							b.addClassName('hyperform-icon');
-							b.setStyle({
-								backgroundImage: 'url(' + a.icon + ')'
-							});
-						}
-						
-						if (typeof a.isSelected === 'undefined') {
-							return;//continue
-						}
-						
-						if (a.isSelected === true) {
-							selectItem(i);
-						}
-					});
-				}//<--if
-				
-				// slider
-				if (field.input.type === 'slider') {
-					// create value object
-					field._o = null;
-					
-					if (typeof field.input.value !== 'undefined') {
-						field._o = field.input.value;
-					}
-					
-					// create *interface* container
-					field._i = new Element('div', {className: 'slider'});
-					
-					// interface
-					var base = new Element('div', {className: 'slider-base'});
-					field._i.insert(base);
-					
-					var fill = new Element('div', {className: 'slider-fill'});
-					base.insert(fill);
-					
-					var handle = new Element('div', {className: 'slider-handle'});
-					fill.insert(handle);
-					
-					var display = new Element('div', {className: 'slider-display'});
-					field._i.insert(display);
-					
-					var isDragging   = false;
-					var lastPosition = 0;
-					var baseWidth    = field.input.width || 300;
-					var fillWidth    = 0;
-					var unitWidth    = baseWidth / (((field.input.items.length === 1) ? 2 : field.input.items.length) - 1);
-					
-					(field.input.items.length - 2).times(function(n) {
-						var pos = (n + 1) * unitWidth;
-						
-						base.insert(
-							new Element('div', {className: 'slider-scale'}).setStyle({
-								left: pos + 'px'
-							})
-						);
-					});
-					
-					base.setStyle({
-						width: baseWidth + 'px'
-					});
-					
-					if (field.input.items.length === 1) {
-						handle.hide();
-						display.update(field.input.items.first().label);
-					}
-					
-					var updateSlider = function _updateSlider(isSnap) {
-						fill.setStyle({
-							width: fillWidth + 'px'
-						});
-						
-						var isBefore = ((fillWidth % unitWidth) < (unitWidth / 2));
-						
-						field.input.items.each(function _eachItemsInput(a, i) {
-							var itemPos = i * unitWidth;
-							
-							if (fillWidth >= itemPos) {
-								return;//continue
-							}
-							
-							if (isBefore) {
-								var label = field.input.items[i - 1].label;
-								var value = field.input.items[i - 1].value;
-								itemPos -= unitWidth;
-							} else {
-								var label = a.label;
-								var value = a.value;
-							}
-							
-							field._o = value;
-							
-							display.update(label);
-							
-							if (isSnap) {
-								fillWidth = itemPos;
-								updateSlider();
-							}
-							
-							throw $break;
-						});
-					};
-					updateSlider();
-					
-					// each items
-					field.input.items.each(function _eachItemsInput(a, i) {
-						a._sliderPosition = i * unitWidth;
-					});
-					
-					var onDragStart = function _onDragStart(e) {
-						isDragging   = true;
-						lastPosition = e.pointerX();
-						
-						var onMove = function(e) {
-							if (isDragging === true) {
-								var delta = e.pointerX() - lastPosition;
-								fillWidth    = fillWidth + delta;
-								
-								if (fillWidth < 0) {
-									fillWidth = 0;
-								} else if (fillWidth > baseWidth) {
-									fillWidth = baseWidth;
-								} else {
-									lastPosition = e.pointerX();
-								}
-								
-								updateSlider();
-							}
-							
-							e.stop();
-							return false;
-						};
-						
-						var onUp = function(e) {
-							isDragging = false;
-							
-							$(document.body).stopObserving('mousemove', onMove);
-							$(document.body).stopObserving('touchmove', onMove);
-							$(document.body).stopObserving('mouseup', onUp);
-							$(document.body).stopObserving('touchend', onUp);
-							
-							updateSlider(true);
-							
-							e.stop();
-							return false;
-						};
-						
-						$(document.body).observe('mousemove', onMove);
-						$(document.body).observe('touchmove', onMove);
-						$(document.body).observe('mouseup', onUp);
-						$(document.body).observe('touchend', onUp);
-						
-						e.stop();
-						return false;
-					};
-					
-					var onClickBase = function(e) {
-						if (isDragging === false) {
-							lastPosition = e.pointerX();
-							fillWidth = e.offsetX;
-							updateSlider(true);
-						}
-						
-						e.stop();
-						return false;
-					};
-					
-					// event observe
-					handle.observe('mousedown', onDragStart);
-					handle.observe('touchstart', onDragStart);
-					base.observe('mousedown', onClickBase);
-					
-				}//<--if slider
-				
-				// if tag
-				if (field.input.type === 'tag') {
-					// create object (array)
-					field._o = field.input.values || [];
-					
-					// create *interface* container
-					field._i = new Element('div', {className: 'tag'})
-					
-					// create tag input
-					var input = new Element('input');
-					field._i.insert(input);
-					
-					if (typeof field.input.maxlength !== 'undefined') {
-						input.writeAttribute('maxlength', field.input.maxlength);
-					}
-					
-					if (typeof field.input.placeholder !== 'undefined') {
-						input.writeAttribute('placeholder', field.input.placeholder);
-					}
-					
-					if (typeof field.input.width !== 'undefined') {
-						input.setStyle({width: field.input.width + 'px'});
-					} else {
-						input.setStyle({width: '100px'});
-					}
-					
-					// create tag add button
-					var addButton = new Element('button').insert('&#x25B8;');
-					field._i.insert(addButton);
-					
-					// create tag list container
-					var tagListContainer = new Element('div');
-					field._i.insert(tagListContainer);
-					
-					var makeTagList = function _makeTagList() {
-						tagListContainer.update();
-						
-						if (field._o.length === 0) {
-							tagListContainer.hide();
-							return;
-						} else {
-							tagListContainer.show();
-						}
-						field._o.each(function(tag) {
-							var label = new Element('span').insert(tag);
-							
-							var delButton = new Element('button').insert('&times;');
-							delButton.observe('click', function() {
-								field._o = field._o.without(tag);
-								
-								makeTagList();
-							});
-							
-							label.insert(delButton);
-							tagListContainer.insert(label);
-						});
-					};
-					makeTagList();
-					
-					var addTag = function _addTag() {
-						if ($F(input).strip() === '') {
-							return;
-						}
-						
-						var value = $F(input).strip();
-						field._o = field._o.without(value);
-						field._o.push(value);
-						
-						input.value = '';
-						makeTagList();
-					};
-					
-					input.observe('keydown', function _onKeydown(e) {
-						if (e.keyCode === 13) {
-							addTag();
-						}
-					});
-					addButton.observe('click', addTag);
-				}//<--if tag
+				field._d = field.input;
+				var inputType = field.input.type;
+				if (typeof Hyperform.inputTypeAliases[inputType] === 'string') {
+					inputType = Hyperform.inputTypeAliases[inputType];
+				}
+				if (typeof Hyperform.inputTypes[inputType] === 'object') {
+					field.__proto__ = Hyperform.inputTypes[inputType];
+					field.init();
+				}
 			}//<--if
 			
 			// insert
@@ -1199,3 +616,606 @@ var Hyperform = Class.create({
 		return this;
 	}//<--applyStyle
 });
+Hyperform.inputTypes = {
+	basic: {
+		init: function _init() {
+			var field = this;
+			// create input element
+			field._f = new Element('input', {
+				type       : (field.input.type === 'password-no-comfirm') ? 'password' : field.input.type
+			});
+			
+			// create input container
+			field._c = new Element('div', {className: 'input'}).insert(field._f);
+			
+			if (typeof field.input.maxlength !== 'undefined') {
+				field._f.writeAttribute('maxlength', field.input.maxlength);
+			}
+			
+			if (typeof field.input.placeholder !== 'undefined') {
+				field._f.writeAttribute('placeholder', field.input.placeholder);
+			}
+			
+			if (typeof field.input.value !== 'undefined') {
+				field._f.writeAttribute('value', field.input.value);
+			}
+			
+			if (typeof field.input.width !== 'undefined') {
+				field._f.setStyle({width: field.input.width + 'px'});
+			} else {
+				field._f.setStyle({width: '200px'});
+			}
+			
+			// observe onChange
+			field._f.observe('change', function() {
+				field.validate();
+			});
+			
+			// for confirm input
+			if (field.input.type === 'password') {
+				// create input element
+				field._fc = new Element('input', {
+					type: 'password'
+				});
+				
+				field._c.insert(field._fc);
+				
+				if (typeof field.input.maxlength !== 'undefined') {
+					field._fc.writeAttribute('maxlength', field.input.maxlength);
+				}
+				
+				if (typeof field.input.placeholder !== 'undefined') {
+					field._fc.writeAttribute('placeholder', field.input.placeholder);
+				}
+				
+				if (typeof field.input.value !== 'undefined') {
+					field._fc.writeAttribute('value', field.input.value);
+				}
+				
+				if (typeof field.input.width !== 'undefined') {
+					field._fc.setStyle({width: field.input.width + 'px'});
+				} else {
+					field._fc.setStyle({width: '200px'});
+				}
+				
+				// observe onChange
+				field._fc.observe('change', function() {
+					field.validate();
+				});
+			}
+			
+			// if appendText
+			if (typeof field.input.appendText !== 'undefined') {
+				field._c.insert(
+					new Element('span', {className: 'append'}).insert(field.input.appendText)
+				);
+			}
+			
+			// if prependText
+			if (typeof field.input.prependText !== 'undefined') {
+				field._c.insert({top:
+					new Element('span', {className: 'prepend'}).insert(field.input.prependText)
+				});
+			}
+		}
+	},
+	textarea: {
+		init: function _init() {
+			var field = this;
+			// create textarea element
+			field._f = new Element('textarea');
+			
+			if (typeof field.input.maxlength !== 'undefined') {
+				field._f.writeAttribute('maxlength', field.input.maxlength);
+			}
+			
+			if (typeof field.input.placeholder !== 'undefined') {
+				field._f.writeAttribute('placeholder', field.input.placeholder);
+			}
+			
+			if (typeof field.input.value !== 'undefined') {
+				field._f.insert(field.input.value);
+			}
+			
+			if (typeof field.input.width !== 'undefined') {
+				field._f.setStyle({width: field.input.width + 'px'});
+			} else {
+				field._f.setStyle({width: '300px'});
+			}
+			
+			if (typeof field.input.height !== 'undefined') {
+				field._f.setStyle({height: field.input.height + 'px'});
+			} else {
+				field._f.setStyle({height: '50px'});
+			}
+			
+			// observe onChange
+			field._f.observe('change', function() {
+				field.validate();
+			});
+		}
+	},
+	radio: {
+		init: function _init() {
+			var field = this;
+			// create value object
+			field._o = null;
+			
+			if (typeof field.input.value !== 'undefined') {
+				field._o = field.input.value;
+			}
+			
+			// create *interface* container
+			field._i = new Element('div', {className: 'radio'});
+			
+			if (field.input.type === 'radio-block') {
+				field._i.addClassName('radio-block');
+			}
+			
+			// each items
+			field.input.items.each(function _eachItemsInput(a) {
+				// create radio button
+				var button = new Element('button');
+				field._i.insert(button);
+				
+				var label = new Element('label').insert(a.label);
+				button.insert(label);
+				
+				if (typeof a.icon !== 'undefined') {
+					label.addClassName('hyperform-icon');
+					label.setStyle({
+						backgroundImage: 'url(' + a.icon + ')'
+					});
+				}
+				
+				// observe onClick
+				button.observe('click', function _onClickRadioBtn() {
+					// write value
+					field._o = a.value;
+					
+					// rewrite selected className
+					field._i.select('button').each(function _eachRadioBtns(b) {
+						b.removeClassName('selected');
+					});
+					this.addClassName('selected');
+					
+					// validate
+					field.validate();
+				});
+				
+				// selected state
+				if ((typeof a.isSelected !== 'undefined') && (a.isSelected === true)) {
+					button.addClassName('selected');
+					field._o = a.value;
+				}
+				
+				// button style customization
+				if (typeof field.input.style !== 'undefined') {
+					button.setStyle(field.input.style);
+				}
+			});//<--#each
+		}
+	},
+	checkbox: {
+		init: function _init() {
+			var field = this;
+			// create object (array)
+			field._o = [];
+			
+			// create *interface* container
+			field._i = new Element('div', {className: 'checkbox'});
+			
+			if (field.input.type === 'checkbox-block') {
+				field._i.addClassName('checkbox-block');
+			}
+			
+			// each items
+			field.input.items.each(function _eachItemsInput(a) {
+				// create radio button
+				var button = new Element('button');
+				
+				var label = new Element('label').insert(a.label);
+				
+				if (typeof a.icon !== 'undefined') {
+					label.addClassName('hyperform-icon');
+					label.setStyle({
+						backgroundImage: 'url(' + a.icon + ')'
+					});
+				}
+				
+				button.insert(label);
+				
+				// observe onClick
+				button.observe('click', function _onClickChkboxBtn() {
+					if (this.hasClassName('selected') === true) {
+						// remove
+						field._o = field._o.without(a.value);
+						this.removeClassName('selected');
+					} else {
+						// add
+						field._o.push(a.value);
+						this.addClassName('selected');
+					}
+					
+					// validate
+					field.validate();
+				});
+				
+				// insert to *interface* container
+				field._i.insert(button);
+				
+				// selected state
+				if ((typeof a.isSelected !== 'undefined') && (a.isSelected === true)) {
+					button.addClassName('selected');
+					field._o.push(a.value);
+				}
+				
+				// button style customization
+				if (typeof field.input.style !== 'undefined') {
+					button.setStyle(field.input.style);
+				}
+			});//<--#each
+		}
+	},
+	pulldown: {
+		init: function _init() {
+			var field = this;
+			// create value object
+			field._o = null;
+			
+			if (typeof field.input.value !== 'undefined') {
+				field._o = field.input.value;
+			}
+			
+			// create *interface* container
+			field._i = new Element('div', {className: 'pulldown'});
+			
+			// interface
+			var button = new Element('button');
+			field._i.insert(button);
+			
+			var label = new Element('label');
+			button.insert(label);
+			
+			var list = new Element('div', {className: 'pulldown-list'}).hide();
+			field._i.insert(list);
+			
+			button.observe('click', function _onClickBtnPulldown(e) {
+				e.stop();
+				button.toggleClassName('selecting');
+				list.toggle();
+				
+				if (list.visible() === false) {
+					return;
+				}
+				
+				// positioning
+				var isOut = (
+					(
+						(table.cumulativeOffset().top + table.getHeight())
+						- (list.cumulativeOffset().top + list.getHeight())
+					) <= 0
+				);
+				if (isOut) {
+					var isOver = ((table.getHeight() - list.getHeight()) < 0);
+					if (isOver) {
+						if (list.hasClassName('pulldown-list-put') === false) {
+							list.addClassName('pulldown-list-put');
+						}
+					} else {
+						if (list.hasClassName('pulldown-list-upper') === false) {
+							list.addClassName('pulldown-list-upper');
+						}
+					}
+				}
+			});
+			
+			document.body.observe('click', function _onClickTablePulldown() {
+				if (list.visible() === true) {
+					button.removeClassName('selecting');
+					list.hide();
+				}
+			});
+			
+			field.input.items.unshift({
+				label: '&mdash;',
+				value: null
+			});
+			
+			var selectItem = function _selectItem(n) {
+				field._o = field.input.items[n].value;
+				
+				label.update(field.input.items[n].label);
+				
+				if (typeof field.input.items[n].icon === 'undefined') {
+					label.removeClassName('hyperform-icon');
+					label.setStyle({
+						backgroundImage: 'none'
+					});
+				} else {
+					label.addClassName('hyperform-icon');
+					label.setStyle({
+						backgroundImage: 'url(' + field.input.items[n].icon + ')'
+					});
+				}
+			};
+			
+			selectItem(0);
+			
+			// each items
+			field.input.items.each(function _eachItemsInput(a, i) {
+				var b = new Element('div').insert(a.label).observe('click', function(e) {
+					selectItem(i);
+					button.removeClassName('selecting');
+					list.hide();
+					
+					// validate
+					field.validate();
+					
+					e.stop();
+				});
+				list.insert(b);
+				
+				if (typeof a.icon !== 'undefined') {
+					b.addClassName('hyperform-icon');
+					b.setStyle({
+						backgroundImage: 'url(' + a.icon + ')'
+					});
+				}
+				
+				if (typeof a.isSelected === 'undefined') {
+					return;//continue
+				}
+				
+				if (a.isSelected === true) {
+					selectItem(i);
+				}
+			});
+		}
+	},
+	slider: {
+		init: function _init() {
+			var field = this;
+			// create value object
+			field._o = null;
+			
+			if (typeof field.input.value !== 'undefined') {
+				field._o = field.input.value;
+			}
+			
+			// create *interface* container
+			field._i = new Element('div', {className: 'slider'});
+			
+			// interface
+			var base = new Element('div', {className: 'slider-base'});
+			field._i.insert(base);
+			
+			var fill = new Element('div', {className: 'slider-fill'});
+			base.insert(fill);
+			
+			var handle = new Element('div', {className: 'slider-handle'});
+			fill.insert(handle);
+			
+			var display = new Element('div', {className: 'slider-display'});
+			field._i.insert(display);
+			
+			var isDragging   = false;
+			var lastPosition = 0;
+			var baseWidth    = field.input.width || 300;
+			var fillWidth    = 0;
+			var unitWidth    = baseWidth / (((field.input.items.length === 1) ? 2 : field.input.items.length) - 1);
+			
+			(field.input.items.length - 2).times(function(n) {
+				var pos = (n + 1) * unitWidth;
+				
+				base.insert(
+					new Element('div', {className: 'slider-scale'}).setStyle({
+						left: pos + 'px'
+					})
+				);
+			});
+			
+			base.setStyle({
+				width: baseWidth + 'px'
+			});
+			
+			if (field.input.items.length === 1) {
+				handle.hide();
+				display.update(field.input.items.first().label);
+			}
+			
+			var updateSlider = function _updateSlider(isSnap) {
+				fill.setStyle({
+					width: fillWidth + 'px'
+				});
+				
+				var isBefore = ((fillWidth % unitWidth) < (unitWidth / 2));
+				
+				field.input.items.each(function _eachItemsInput(a, i) {
+					var itemPos = i * unitWidth;
+					
+					if (fillWidth >= itemPos) {
+						return;//continue
+					}
+					
+					if (isBefore) {
+						var label = field.input.items[i - 1].label;
+						var value = field.input.items[i - 1].value;
+						itemPos -= unitWidth;
+					} else {
+						var label = a.label;
+						var value = a.value;
+					}
+					
+					field._o = value;
+					
+					display.update(label);
+					
+					if (isSnap) {
+						fillWidth = itemPos;
+						updateSlider();
+					}
+					
+					throw $break;
+				});
+			};
+			updateSlider();
+			
+			// each items
+			field.input.items.each(function _eachItemsInput(a, i) {
+				a._sliderPosition = i * unitWidth;
+			});
+			
+			var onDragStart = function _onDragStart(e) {
+				isDragging   = true;
+				lastPosition = e.pointerX();
+				
+				var onMove = function(e) {
+					if (isDragging === true) {
+						var delta = e.pointerX() - lastPosition;
+						fillWidth    = fillWidth + delta;
+						
+						if (fillWidth < 0) {
+							fillWidth = 0;
+						} else if (fillWidth > baseWidth) {
+							fillWidth = baseWidth;
+						} else {
+							lastPosition = e.pointerX();
+						}
+						
+						updateSlider();
+					}
+					
+					e.stop();
+					return false;
+				};
+				
+				var onUp = function(e) {
+					isDragging = false;
+					
+					$(document.body).stopObserving('mousemove', onMove);
+					$(document.body).stopObserving('touchmove', onMove);
+					$(document.body).stopObserving('mouseup', onUp);
+					$(document.body).stopObserving('touchend', onUp);
+					
+					updateSlider(true);
+					
+					e.stop();
+					return false;
+				};
+				
+				$(document.body).observe('mousemove', onMove);
+				$(document.body).observe('touchmove', onMove);
+				$(document.body).observe('mouseup', onUp);
+				$(document.body).observe('touchend', onUp);
+				
+				e.stop();
+				return false;
+			};
+			
+			var onClickBase = function(e) {
+				if (isDragging === false) {
+					lastPosition = e.pointerX();
+					fillWidth = e.offsetX;
+					updateSlider(true);
+				}
+				
+				e.stop();
+				return false;
+			};
+			
+			// event observe
+			handle.observe('mousedown', onDragStart);
+			handle.observe('touchstart', onDragStart);
+			base.observe('mousedown', onClickBase);
+		}
+	},
+	tag: {
+		init: function _init() {
+			var field = this;
+			// create object (array)
+			field._o = field.input.values || [];
+			
+			// create *interface* container
+			field._i = new Element('div', {className: 'tag'})
+			
+			// create tag input
+			var input = new Element('input');
+			field._i.insert(input);
+			
+			if (typeof field.input.maxlength !== 'undefined') {
+				input.writeAttribute('maxlength', field.input.maxlength);
+			}
+			
+			if (typeof field.input.placeholder !== 'undefined') {
+				input.writeAttribute('placeholder', field.input.placeholder);
+			}
+			
+			if (typeof field.input.width !== 'undefined') {
+				input.setStyle({width: field.input.width + 'px'});
+			} else {
+				input.setStyle({width: '100px'});
+			}
+			
+			// create tag add button
+			var addButton = new Element('button').insert('&#x25B8;');
+			field._i.insert(addButton);
+			
+			// create tag list container
+			var tagListContainer = new Element('div');
+			field._i.insert(tagListContainer);
+			
+			var makeTagList = function _makeTagList() {
+				tagListContainer.update();
+				
+				if (field._o.length === 0) {
+					tagListContainer.hide();
+					return;
+				} else {
+					tagListContainer.show();
+				}
+				field._o.each(function(tag) {
+					var label = new Element('span').insert(tag);
+					
+					var delButton = new Element('button').insert('&times;');
+					delButton.observe('click', function() {
+						field._o = field._o.without(tag);
+						
+						makeTagList();
+					});
+					
+					label.insert(delButton);
+					tagListContainer.insert(label);
+				});
+			};
+			makeTagList();
+			
+			var addTag = function _addTag() {
+				if ($F(input).strip() === '') {
+					return;
+				}
+				
+				var value = $F(input).strip();
+				field._o = field._o.without(value);
+				field._o.push(value);
+				
+				input.value = '';
+				makeTagList();
+			};
+			
+			input.observe('keydown', function _onKeydown(e) {
+				if (e.keyCode === 13) {
+					addTag();
+				}
+			});
+			addButton.observe('click', addTag);
+		}
+	}
+};
+Hyperform.inputTypeAliases = {
+	'text': 'basic',
+	'password': 'basic',
+	'date': 'basic',
+	'radio-block': 'radio',
+	'checkbox-block': 'checkbox'
+}
